@@ -11,7 +11,7 @@ import schemas
 import utilities
 
 
-async def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
+def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
 
     main_time, rest_time = int(data.time * 0.9), int(data.time * 0.1)
     categories = data.categories
@@ -35,7 +35,7 @@ async def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
 
     news = []
     for k, v in categories.items():
-        news.append(await db.query(models.News).filter(
+        news.append(db.query(models.News).filter(
             models.News.region == data.region,
             models.News.language == data.language,
             models.News.category == k).order_by(func.random()).limit(v).all())
@@ -43,7 +43,7 @@ async def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
     return news
 
 
-async def send_shared_news(data: schemas.SharedNews, db) -> None:
+def send_shared_news(data: schemas.SharedNews, db) -> None:
 
     link = utilities.random_string(64)
     while db.query(models.SharedNews).filter(models.SharedNews.link == link).first() is not None:
@@ -63,7 +63,7 @@ async def send_shared_news(data: schemas.SharedNews, db) -> None:
     return None
 
 
-async def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
+def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
 
     qr = db.query(models.QRCode).filter(models.QRCode.user == data.user).first()
     if qr is not None:
@@ -89,7 +89,7 @@ async def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
     return path
 
 
-async def send_support(data: schemas.SupportMessage, db) -> None:
+def send_support(data: schemas.SupportMessage, db) -> None:
 
     db.add(models.SupportMessage(
         user=data.user,
@@ -100,7 +100,7 @@ async def send_support(data: schemas.SupportMessage, db) -> None:
     return None
 
 
-async def make_user(db) -> str:
+def make_user(db) -> str:
 
     usr = utilities.random_string(32)
     while db.query(models.User).filter(models.User.user == usr).first() is not None:

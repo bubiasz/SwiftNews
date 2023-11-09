@@ -35,7 +35,7 @@ app = FastAPI()
 ###############
 
 @app.post("/api/newsfeed", response_class=List[schemas.News])
-async def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
+def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
@@ -45,7 +45,7 @@ async def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     if usr.news is True:
         raise HTTPException(status_code=429, detail="Newsfeed already generated")
     
-    news = await services.read_newsfeed(data, db)
+    news = services.read_newsfeed(data, db)
     usr.news = True
     db.commit()
 
@@ -58,7 +58,7 @@ async def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
 ###############
 
 @app.get("/api/sharednews/{user}/{link}", response_model=schemas.News)
-async def read_sharednews(user: str, link: str, db: Session = Depends(get_db)):
+def read_sharednews(user: str, link: str, db: Session = Depends(get_db)):
 
     usr = db.query(models.User).filter(models.User.user == user).first()
 
@@ -77,7 +77,7 @@ async def read_sharednews(user: str, link: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/sharednews", response_class=JSONResponse)
-async def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db)):
+def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
@@ -89,7 +89,7 @@ async def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db
     if len(news) > config.SHARED_NEWS_SEND_LIMIT:
         raise HTTPException(status_code=429, detail="Daily shared news limit reached")
 
-    await services.send_sharednews(data, db)
+    services.send_sharednews(data, db)
     usr.shared_reads += 1
     db.commit()
 
@@ -102,7 +102,7 @@ async def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db
 ###############
 
 @app.get("/api/qrcode/{user}/{key}", response_model=schemas.QRCodeSchema)
-async def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
+def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == user).first()
 
@@ -125,7 +125,7 @@ async def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/qrcode", response_class=FileResponse)
-async def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
+def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
@@ -135,7 +135,7 @@ async def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db))
     if usr.qrcode_makes > config.QRCODE_MAKES_LIMIT:
         raise HTTPException(status_code=429, detail="Daily make QR code limit reached")
     
-    qr = await services.make_qrcode(data, db)
+    qr = services.make_qrcode(data, db)
     usr.qrcode_makes += 1
     db.commit()
 
@@ -148,7 +148,7 @@ async def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db))
 ###############
 
 @app.get("/api/support/{user}", response_model=List[schemas.SupportResponse])
-async def read_support(user: str, db: Session = Depends(get_db)):
+def read_support(user: str, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == user).first()
 
@@ -165,7 +165,7 @@ async def read_support(user: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/support", response_class=JSONResponse)
-async def send_support(data: schemas.SupportMessage, db: Session = Depends(get_db)):
+def send_support(data: schemas.SupportMessage, db: Session = Depends(get_db)):
     
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
@@ -178,7 +178,7 @@ async def send_support(data: schemas.SupportMessage, db: Session = Depends(get_d
     if len(msg) > config.SUPPORT_MESSAGE_LIMIT:
         raise HTTPException(status_code=429, detail="Daily support limit reached")
 
-    await services.send_support(data, db)
+    services.send_support(data, db)
     db.commit()
     
     return JSONResponse(content={"message": "Support message sent"})
@@ -190,9 +190,9 @@ async def send_support(data: schemas.SupportMessage, db: Session = Depends(get_d
 ###############
 
 @app.get("/api/user", response_class=JSONResponse)
-async def make_user(db: Session = Depends(get_db)):
+def make_user(db: Session = Depends(get_db)):
     
-    usr = await services.make_user(db)
+    usr = services.make_user(db)
     db.commit()
 
     return JSONResponse(content={"user": usr})
