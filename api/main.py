@@ -2,13 +2,11 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
-from sqlalchemy import JSON
 from sqlalchemy.orm import Session
 
 import config
-import models
-import schemas
-import database
+from shared import database, models
+from api import schemas
 import services
 
 ###############

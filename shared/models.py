@@ -1,6 +1,6 @@
 import sqlalchemy as sql
 
-from database import Base
+from shared.database import Base
 
 
 # Database table to store news

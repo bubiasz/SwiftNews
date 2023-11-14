@@ -6,8 +6,8 @@ import qrcode
 from sqlalchemy import func
 
 import config
-import models
-import schemas
+from shared import models
+from api import schemas
 import utilities
 
 

@@ -2,7 +2,7 @@ import sqlalchemy as sql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-import config
+from shared import config
 
 
 engine = sql.create_engine(config.DATABASE_URL)
