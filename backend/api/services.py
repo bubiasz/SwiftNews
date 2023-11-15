@@ -5,21 +5,18 @@ from typing import List
 import qrcode
 from sqlalchemy import func
 
-import config
-from shared import models
-from api import schemas
-import utilities
+from backend import config, models
+from backend.api import schemas, utilities
 
 
 def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
-
     main_time, rest_time = int(data.time * 0.9), int(data.time * 0.1)
     categories = data.categories
     categories_sum = sum(categories.values())
 
     for k, v in categories.items():
         value = int(v / categories_sum * main_time)
-        
+
         if value != 0:
             categories[k] = value
         else:
@@ -39,12 +36,11 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
             models.News.region == data.region,
             models.News.language == data.language,
             models.News.category == k).order_by(func.random()).limit(v).all())
-        
+
     return news
 
 
 def send_shared_news(data: schemas.SharedNews, db) -> None:
-
     link = utilities.random_string(64)
     while db.query(models.SharedNews).filter(models.SharedNews.link == link).first() is not None:
         link = utilities.random_string(64)
@@ -64,7 +60,6 @@ def send_shared_news(data: schemas.SharedNews, db) -> None:
 
 
 def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
-
     qr = db.query(models.QRCode).filter(models.QRCode.user == data.user).first()
     if qr is not None:
         db.delete(qr)
@@ -90,7 +85,6 @@ def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
 
 
 def send_support(data: schemas.SupportMessage, db) -> None:
-
     db.add(models.SupportMessage(
         user=data.user,
         title=data.title,
@@ -101,11 +95,10 @@ def send_support(data: schemas.SupportMessage, db) -> None:
 
 
 def make_user(db) -> str:
-
     usr = utilities.random_string(32)
     while db.query(models.User).filter(models.User.user == usr).first() is not None:
         usr = utilities.random_string(32)
-    
+
     db.add(models.User(user=usr))
 
     return usr

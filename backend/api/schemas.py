@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -36,11 +37,12 @@ class SharedNews(News):
     title: str
     content: str
 
+
 # Used in qrcode [get], qrcode [post]
 class QRCodeSchema(BaseModel):
     # QR code metadata fields
     user: str
-    
+
     # QR code data fields
     time: int
     region: str
@@ -51,10 +53,11 @@ class QRCodeSchema(BaseModel):
 # Used in support [get]
 class SupportResponse(BaseModel):
     # Support message data fields
-    response: Optional[str] 
-
+    response: Optional[str]
 
 # Used in support [post]
+
+
 class SupportMessage(BaseModel):
     # Support message data fields
     user: str

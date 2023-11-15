@@ -1,10 +1,10 @@
 import sqlalchemy as sql
 
-from shared.database import Base
+from backend import database
 
 
 # Database table to store news
-class News(Base):
+class News(database.Base):
     # Table name in database
     __tablename__ = "news"
 
@@ -12,7 +12,7 @@ class News(Base):
     id = sql.Column(sql.BigInteger, index=True, primary_key=True)
     category = sql.Column(sql.String(64), index=True)
     language = sql.Column(sql.String(64), index=True)
-    region = sql.Column(sql.String(64), index=True)
+    location = sql.Column(sql.String(64), index=True)
 
     # News data fields
     url = sql.Column(sql.String(512))
@@ -22,7 +22,7 @@ class News(Base):
 
 
 # Database table to store shared news
-class SharedNews(Base):
+class SharedNews(database.Base):
     # Table name in database
     __tablename__ = "shared_news"
 
@@ -40,7 +40,7 @@ class SharedNews(Base):
 
 
 # Database table to store QR codes
-class QRCode(Base):
+class QRCode(database.Base):
     # Table name in database
     __tablename__ = "qr_code"
 
@@ -52,13 +52,13 @@ class QRCode(Base):
     user = sql.Column(sql.String(32), index=True)
     key = sql.Column(sql.String(32), index=True)
     time = sql.Column(sql.Integer)
-    region = sql.Column(sql.String(64))
     language = sql.Column(sql.String(64))
+    location = sql.Column(sql.String(64))
     categories = sql.Column(sql.JSON)
 
 
 # Database table to store support messages
-class SupportMessage(Base):
+class SupportMessage(database.Base):
     # Table name in database
     __tablename__ = "support_message"
 
@@ -75,7 +75,7 @@ class SupportMessage(Base):
 
 
 # Database table to store users
-class User(Base):
+class User(database.Base):
     # Table name in database
     __tablename__ = "user"
 
