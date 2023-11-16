@@ -13,7 +13,7 @@ for language, location in config.SUPPORTED_LANGUAGES:
     articles = p.get_articles()
 
     for article in articles:
-        with database.get_db() as db:
+        with database.SessionLocal() as db:
             db.add(models.News(
                 category=article.category,
                 language=article.language,
@@ -26,3 +26,6 @@ for language, location in config.SUPPORTED_LANGUAGES:
             db.commit()
 
     p.parser_reset()
+
+    print("done")
+    break

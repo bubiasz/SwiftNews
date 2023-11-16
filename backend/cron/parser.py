@@ -1,7 +1,4 @@
-from abc import ABC, abstractmethod
-
-from backend.cron import schemas
-from backend.cron.parsers import newspaper_parser
+from backend.cron.parsers import newspaper_parser, strategy_parser
 
 
 class Parser:
@@ -17,6 +14,9 @@ class Parser:
     def set_location(self, location: str) -> None:
         self.__parser.set_location(location)
 
+    def parser_reset(self) -> None:
+        self.__articles = list()
+
     def parse_articles(self, articles: list) -> None:
         for article in articles:
             try:
@@ -30,22 +30,8 @@ class Parser:
         return self.__articles
 
 
-class ParserStrategy(ABC):
-    @abstractmethod
-    def parse_article(self, article: object) -> schemas.Article:
-        pass
-
-    @abstractmethod
-    def set_language(self, language: str) -> None:
-        pass
-
-    @abstractmethod
-    def set_location(self, location: str) -> None:
-        pass
-
-
 class ParserFactory:
     @staticmethod
-    def create_parser(parser: str, language: str, location: str) -> ParserStrategy:
+    def create_parser(parser: str, language: str, location: str) -> strategy_parser.ParserStrategy:
         if parser.lower() == "article":
             return newspaper_parser.Parser(language, location)

@@ -9,9 +9,20 @@ from backend.api import schemas, services
 
 ###############
 #
-# App startup
+# Database connect and app start
 #
 ###############
+
+models.database.Base.metadata.create_all(bind=database.engine)
+
+
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 app = FastAPI()
 
@@ -23,7 +34,7 @@ app = FastAPI()
 ###############
 
 @app.post("/api/newsfeed", response_class=List[schemas.News])
-def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(database.get_db)):
+def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
     if usr is None:
@@ -46,7 +57,7 @@ def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(database.get_db)
 ###############
 
 @app.get("/api/sharednews/{user}/{link}", response_model=schemas.News)
-def read_sharednews(user: str, link: str, db: Session = Depends(database.get_db)):
+def read_sharednews(user: str, link: str, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == user).first()
 
     if usr is None:
@@ -64,7 +75,7 @@ def read_sharednews(user: str, link: str, db: Session = Depends(database.get_db)
 
 
 @app.post("/api/sharednews", response_class=JSONResponse)
-def send_sharednews(data: schemas.SharedNews, db: Session = Depends(database.get_db)):
+def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
     if usr is None:
@@ -89,7 +100,7 @@ def send_sharednews(data: schemas.SharedNews, db: Session = Depends(database.get
 ###############
 
 @app.get("/api/qrcode/{user}/{key}", response_model=schemas.QRCodeSchema)
-def read_qrcode(user: str, key: str, db: Session = Depends(database.get_db)):
+def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == user).first()
 
     if usr is None:
@@ -111,7 +122,7 @@ def read_qrcode(user: str, key: str, db: Session = Depends(database.get_db)):
 
 
 @app.post("/api/qrcode", response_class=FileResponse)
-def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(database.get_db)):
+def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
     if usr is None:
@@ -134,7 +145,7 @@ def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(database.get_d
 ###############
 
 @app.get("/api/support/{user}", response_model=List[schemas.SupportResponse])
-def read_support(user: str, db: Session = Depends(database.get_db)):
+def read_support(user: str, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == user).first()
 
     if usr is None:
@@ -150,7 +161,7 @@ def read_support(user: str, db: Session = Depends(database.get_db)):
 
 
 @app.post("/api/support", response_class=JSONResponse)
-def send_support(data: schemas.SupportMessage, db: Session = Depends(database.get_db)):
+def send_support(data: schemas.SupportMessage, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
     if usr is None:
@@ -175,7 +186,7 @@ def send_support(data: schemas.SupportMessage, db: Session = Depends(database.ge
 ###############
 
 @app.get("/api/user", response_class=JSONResponse)
-def make_user(db: Session = Depends(database.get_db)):
+def make_user(db: Session = Depends(get_db)):
     usr = services.make_user(db)
     db.commit()
 

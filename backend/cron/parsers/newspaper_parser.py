@@ -2,19 +2,21 @@ import datetime as dt
 
 import newspaper
 
-from backend.cron import schemas, scraper
+from backend.cron import schemas
+from backend.cron.parsers import strategy_parser
 
 
-class Parser(scraper.ArticleParserStrategy):
+class Parser(strategy_parser.ParserStrategy):
 
-    def __init__(self, language: str):
+    def __init__(self, language: str, location: str):
         self.__language = language
+        self.__location = location
 
     def set_language(self, language: str) -> None:
         self.__language = language
 
-    def set_location(self, *args) -> None:
-        pass
+    def set_location(self, location: str) -> None:
+        self.__location = location
 
     def parse_article(self, article: object) -> schemas.ParsedArticle:
         try:
