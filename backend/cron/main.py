@@ -2,7 +2,7 @@ from backend import config, database, models
 from backend.cron import parser, scraper
 
 
-p = parser.ArticleParser()
+p = parser.Parser("article", "pl", "pl")
 
 for language, location in config.SUPPORTED_LANGUAGES:
     p.set_language(language)

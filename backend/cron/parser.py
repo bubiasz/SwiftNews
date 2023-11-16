@@ -1,62 +1,51 @@
-import datetime as dt
-
-import newspaper
+from abc import ABC, abstractmethod
 
 from backend.cron import schemas
+from backend.cron.parsers import newspaper_parser
 
 
-class ArticleParser:
-    __instance: object = None
-    __language: str = ""
-    __location: str = ""
-    __articles_with_content: list = None
+class Parser:
 
-    def __new__(cls, language: str = None, location: str = None):
-        if not cls.__instance:
-            cls.__instance = super(ArticleParser, cls).__new__(cls)
-            cls.__instance.__language = language
-            cls.__instance.__location = location
-            cls.__instance.__articles_with_content = []
-
-        return cls.__instance
+    # To change the type of parser create a new instance
+    def __init__(self, parser: str, language: str, location: str):
+        self.__parser = ParserFactory.create_parser(parser, language, location)
+        self.__articles = list()
 
     def set_language(self, language: str) -> None:
-        self.__language = language
+        self.__parser.set_language(language)
 
     def set_location(self, location: str) -> None:
-        self.__location = location
-
-    def parser_reset(self) -> None:
-        self.__articles_with_content = []
-
-    def get_articles(self) -> list:
-        return self.__articles_with_content
+        self.__parser.set_location(location)
 
     def parse_articles(self, articles: list) -> None:
         for article in articles:
             try:
-                print(article.url)
-                title, content = self.__get_article(article.url)
+                parsed = self.__parser.parse_article(article)
             except ValueError:
-                # handle this error by adding new articles or something?
-                pass
+                continue
 
-            self.__articles_with_content.append(schemas.ParsedArticle(
-                category=article.category,
-                language=self.__language,
-                location=self.__location,
-                url=article.url,
-                date=dt.datetime.now(),
-                title=title,
-                content=content,
-            ))
+            self.__articles.append(parsed)
 
-    def __get_article(self, link: str) -> (str, str):
-        article = newspaper.Article(link, language=self.__language)
-        article.download()
-        article.parse()
+    def get_articles(self) -> list:
+        return self.__articles
 
-        if article.text == "" or not article.text:
-            raise ValueError("Could not read the article")
 
-        return article.title, article.text
+class ParserStrategy(ABC):
+    @abstractmethod
+    def parse_article(self, article: object) -> schemas.Article:
+        pass
+
+    @abstractmethod
+    def set_language(self, language: str) -> None:
+        pass
+
+    @abstractmethod
+    def set_location(self, location: str) -> None:
+        pass
+
+
+class ParserFactory:
+    @staticmethod
+    def create_parser(parser: str, language: str, location: str) -> ParserStrategy:
+        if parser.lower() == "article":
+            return newspaper_parser.Parser(language, location)
