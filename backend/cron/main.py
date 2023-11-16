@@ -26,6 +26,3 @@ for language, location in config.SUPPORTED_LANGUAGES:
             db.commit()
 
     p.parser_reset()
-
-    print("done")
-    break
