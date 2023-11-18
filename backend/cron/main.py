@@ -2,13 +2,12 @@ from backend import config, database, models
 from backend.cron import parser, scraper
 
 
-p = parser.Parser("article", "pl", "pl")
-
 for language, location in config.SUPPORTED_LANGUAGES:
-    p.set_language(language)
-    p.set_location(location)
+    p = parser.Parser(config.NEWS_PARSER, language, location)
+    s = scraper.Scraper(config.NEWS_SCRAPER, config.NEWS_NUMBER, language, location)
+    s.scrape_articles()
     p.parse_articles(
-        scraper.GoogleNewsScraper(language, location).get_articles())
+        s.get_articles())
 
     articles = p.get_articles()
 
@@ -23,6 +22,11 @@ for language, location in config.SUPPORTED_LANGUAGES:
                 title=article.title,
                 content=article.content
             ))
-            db.commit()
+            try:
+                db.commit()
+            except Exception as e:
+                print(e)
+                db.rollback()
+                continue
 
     p.parser_reset()

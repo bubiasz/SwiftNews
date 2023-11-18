@@ -37,7 +37,10 @@ class Parser(strategy_parser.ParserStrategy):
     def __download_article(self, url: str) -> (str, str):
         article = newspaper.Article(url, language=self.__language)
         article.download()
-        article.parse()
+        try:
+            article.parse()
+        except Exception as e:
+            print(e)
 
         if not article.text:
             raise ValueError("Empty article")
