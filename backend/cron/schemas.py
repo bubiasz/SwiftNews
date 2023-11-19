@@ -1,9 +1,10 @@
-import datetime
+import datetime as dt
 
 
 class ParsedArticle:
+
     def __init__(self, category: str, language: str, location: str,
-                 url: str, date: datetime.date, title: str, content: str = None):
+                 url: str, date: dt.date, title: str, content: str = None):
         self.category = category
         self.language = language
         self.location = location

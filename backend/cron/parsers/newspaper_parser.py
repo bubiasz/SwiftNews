@@ -40,8 +40,8 @@ class Parser(strategy_parser.ParserStrategy):
         try:
             article.parse()
             article.nlp()
-        except Exception as e:
-            print(e)
+        except:
+            pass
 
         if not article.text:
             raise ValueError("Empty article")

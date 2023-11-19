@@ -5,10 +5,9 @@ from backend.cron import parser, scraper
 for language, location in config.SUPPORTED_LANGUAGES:
     p = parser.Parser(config.NEWS_PARSER, language, location)
     s = scraper.Scraper(config.NEWS_SCRAPER, config.NEWS_NUMBER, language, location)
+    
     s.scrape_articles()
-    p.parse_articles(
-        s.get_articles())
-
+    p.parse_articles(s.get_articles())
     articles = p.get_articles()
 
     for article in articles:
@@ -22,11 +21,6 @@ for language, location in config.SUPPORTED_LANGUAGES:
                 title=article.title,
                 content=article.content
             ))
-            try:
-                db.commit()
-            except Exception as e:
-                print(e)
-                db.rollback()
-                continue
+            db.commit()
 
-    p.parser_reset()
+    del p, s, articles

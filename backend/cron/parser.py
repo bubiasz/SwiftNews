@@ -14,9 +14,6 @@ class Parser:
     def set_location(self, location: str) -> None:
         self.__parser.set_location(location)
 
-    def parser_reset(self) -> None:
-        self.__articles = list()
-
     def parse_articles(self, articles: list) -> None:
         for article in articles:
             try:
