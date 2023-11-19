@@ -39,10 +39,11 @@ class Parser(strategy_parser.ParserStrategy):
         article.download()
         try:
             article.parse()
+            article.nlp()
         except Exception as e:
             print(e)
 
         if not article.text:
             raise ValueError("Empty article")
 
-        return article.title, article.text
+        return article.title, article.summary
