@@ -58,12 +58,12 @@ class Scraper(strategy_scraper.ScraperStrategy):
 
             # get links to articles
             article_links = driver.find_elements(By.CLASS_NAME, config.ARTICLE_SELECTOR)[
-                            :self.__number_of_articles]
+                            :self.__number_of_articles * 4]
 
             # add columnId, name and url of article to articles list
-            for i in range(len(article_links)):
+            for i in range(0, len(article_links), 4):
                 link = article_links[i].get_attribute("href")
-                final_url = self.get_final_url(link, chrome_options)
+                final_url = self.get_final_url(link, driver)
                 if final_url is None or not all(domain not in final_url for domain in config.LINK_BLACKLIST):
                     continue
 
@@ -81,12 +81,10 @@ class Scraper(strategy_scraper.ScraperStrategy):
         driver.quit()
 
     @staticmethod
-    def get_final_url(url: str, chrome_options: options.Options) -> str:
-        driver = webdriver.Chrome(options=chrome_options)
+    def get_final_url(url: str, driver: webdriver) -> str:
+        driver.execute_script("window.open('');")
+        driver.switch_to.window(driver.window_handles[1])
         driver.get(url)
-        buttons = WebDriverWait(driver, 10).until(
-            ec.presence_of_all_elements_located((By.CSS_SELECTOR, 'button.VfPpkd-LgbsSe')))
-        buttons[1].click()
 
         try:
             time.sleep(1)
@@ -96,7 +94,8 @@ class Scraper(strategy_scraper.ScraperStrategy):
             return None
 
         final_url = driver.current_url
-        driver.quit()
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
         return final_url
 
     def print_articles(self):
