@@ -15,7 +15,7 @@ class News(database.Base):
     location = sql.Column(sql.String(64), index=True)
 
     # News data fields
-    url = sql.Column(sql.String(512))
+    url = sql.Column(sql.String(512), unique=True)
     date = sql.Column(sql.DateTime)
     title = sql.Column(sql.Unicode(256))
     content = sql.Column(sql.UnicodeText)
