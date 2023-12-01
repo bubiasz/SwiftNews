@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -28,12 +26,38 @@ app = FastAPI()
 
 
 ###############
+#
+# User API endpoints
+#
+###############
+
+@app.get("/api/user", response_class=JSONResponse)
+def make_user(db: Session = Depends(get_db)):
+    usr = services.make_user(db)
+    db.commit()
+
+    return JSONResponse(content={"user": usr})
+
+
+###############
+#
+# Get all possible language, region and categories
+#
+###############
+
+@app.get("/api/config", response_model=list[schemas.ConfigItem])
+def get_config():
+    return list(schemas.ConfigItem(
+        language=k[0], region=k[1], categories=v) for k, v in config.CATEGORIES)
+
+
+###############
 # 
 # Newsfeed API endpoints
 #
 ###############
 
-@app.post("/api/newsfeed", response_class=List[schemas.News])
+@app.post("/api/newsfeed", response_model=list[schemas.News])
 def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
@@ -144,7 +168,7 @@ def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
 #
 ###############
 
-@app.get("/api/support/{user}", response_model=List[schemas.SupportResponse])
+@app.get("/api/support/{user}", response_model=list[schemas.SupportResponse])
 def read_support(user: str, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == user).first()
 
@@ -177,17 +201,3 @@ def send_support(data: schemas.SupportMessage, db: Session = Depends(get_db)):
     db.commit()
 
     return JSONResponse(content={"message": "Support message sent"})
-
-
-###############
-#
-# User API endpoints
-#
-###############
-
-@app.get("/api/user", response_class=JSONResponse)
-def make_user(db: Session = Depends(get_db)):
-    usr = services.make_user(db)
-    db.commit()
-
-    return JSONResponse(content={"user": usr})

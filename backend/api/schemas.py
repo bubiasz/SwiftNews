@@ -55,11 +55,17 @@ class SupportResponse(BaseModel):
     # Support message data fields
     response: Optional[str]
 
+
 # Used in support [post]
-
-
 class SupportMessage(BaseModel):
     # Support message data fields
     user: str
     title: str
     message: str
+
+
+# Used in config [get]
+class ConfigItem(BaseModel):
+    language: str
+    region: str
+    categories: list[str]
