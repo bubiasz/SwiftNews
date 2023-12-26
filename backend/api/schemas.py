@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -20,20 +21,20 @@ class News(BaseModel):
 
     # News data fields
     url: str
-    date: str
+    date: datetime.date
     title: str
     content: str
 
 
 # Used in sharednews [post]
-class SharedNews(News):
+class SharedNews(BaseModel):
     # Shared news metadata fields
     user: str
     category: str
 
     # Shared news data fields
     url: str
-    date: str
+    date: datetime.date
     title: str
     content: str
 

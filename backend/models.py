@@ -12,11 +12,11 @@ class News(database.Base):
     id = sql.Column(sql.BigInteger, index=True, primary_key=True)
     category = sql.Column(sql.String(64), index=True)
     language = sql.Column(sql.String(64), index=True)
-    location = sql.Column(sql.String(64), index=True)
+    region = sql.Column(sql.String(64), index=True)
 
     # News data fields
     url = sql.Column(sql.String(512), unique=True)
-    date = sql.Column(sql.DateTime)
+    date = sql.Column(sql.Date)
     title = sql.Column(sql.Unicode(256))
     content = sql.Column(sql.UnicodeText)
 
@@ -30,11 +30,12 @@ class SharedNews(database.Base):
     id = sql.Column(sql.BigInteger, index=True, primary_key=True)
     category = sql.Column(sql.String(64))
     link = sql.Column(sql.String(64), index=True)
-    created = sql.Column(sql.DateTime)
+    created = sql.Column(sql.DateTime, default=sql.func.now())
 
     # Shared news data fields
+    user = sql.Column(sql.String(32), index=True)
     url = sql.Column(sql.String(512))
-    date = sql.Column(sql.DateTime)
+    date = sql.Column(sql.Date)
     title = sql.Column(sql.Unicode(256))
     content = sql.Column(sql.UnicodeText)
 
@@ -53,7 +54,7 @@ class QRCode(database.Base):
     key = sql.Column(sql.String(32), index=True)
     time = sql.Column(sql.Integer)
     language = sql.Column(sql.String(64))
-    location = sql.Column(sql.String(64))
+    region = sql.Column(sql.String(64))
     categories = sql.Column(sql.JSON)
 
 

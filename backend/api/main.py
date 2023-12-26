@@ -1,5 +1,9 @@
+import os
+
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+
 from sqlalchemy.orm import Session
 
 from backend import config, database, models
@@ -11,6 +15,7 @@ from backend.api import schemas, services
 #
 ###############
 
+os.makedirs("static/qrcode", exist_ok=True)
 models.database.Base.metadata.create_all(bind=database.engine)
 
 
@@ -23,6 +28,7 @@ def get_db():
 
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 ###############
@@ -36,7 +42,7 @@ def make_user(db: Session = Depends(get_db)):
     usr = services.make_user(db)
     db.commit()
 
-    return JSONResponse(content={"user": usr})
+    return JSONResponse(content={"unique_id": usr})
 
 
 ###############
@@ -45,10 +51,10 @@ def make_user(db: Session = Depends(get_db)):
 #
 ###############
 
-@app.get("/api/config", response_model=list[schemas.ConfigItem])
+@app.get("/api/config")
 def get_config():
     return list(schemas.ConfigItem(
-        language=k[0], region=k[1], categories=v) for k, v in config.CATEGORIES)
+        language=k[0], region=k[1], categories=v) for k, v in config.CATEGORIES.items())
 
 
 ###############
@@ -64,12 +70,14 @@ def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     if usr is None:
         raise HTTPException(status_code=404, detail="Invalid user")
 
-    if usr.news is True:
-        raise HTTPException(status_code=429, detail="Newsfeed already generated")
+    # if usr.news is True:
+    #     raise HTTPException(status_code=429, detail="Newsfeed already generated")
 
     news = services.read_newsfeed(data, db)
     usr.news = True
     db.commit()
+
+    print(type(news[0].date))
 
     return news
 
@@ -145,21 +153,21 @@ def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
     return data
 
 
-@app.post("/api/qrcode", response_class=FileResponse)
+@app.post("/api/qrcode", response_class=JSONResponse)
 def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
     usr = db.query(models.User).filter(models.User.user == data.user).first()
 
     if usr is None:
         raise HTTPException(status_code=404, detail="Invalid user")
 
-    if usr.qrcode_makes > config.QRCODE_MAKES_LIMIT:
-        raise HTTPException(status_code=429, detail="Daily make QR code limit reached")
+    # if usr.qrcode_makes > config.QRCODE_MAKES_LIMIT:
+    #     raise HTTPException(status_code=429, detail="Daily make QR code limit reached")
 
     qr = services.make_qrcode(data, db)
     usr.qrcode_makes += 1
     db.commit()
 
-    return qr
+    return JSONResponse(content={"qr": qr})
 
 
 ###############

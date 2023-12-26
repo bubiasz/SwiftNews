@@ -1,5 +1,6 @@
 import os
 import random
+import datetime
 from typing import List
 
 import qrcode
@@ -15,12 +16,9 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
     categories_sum = sum(categories.values())
 
     for k, v in categories.items():
-        value = int(v / categories_sum * main_time)
+        categories[k] = int(v / categories_sum * main_time)
 
-        if value != 0:
-            categories[k] = value
-        else:
-            del categories[k]
+    categories = {k: v for k, v in categories.items() if v != 0}
 
     for _ in range(int(main_time - sum(categories.values()))):
         categories[random.choice(list(categories.keys()))] += 1
@@ -32,7 +30,7 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
 
     news = []
     for k, v in categories.items():
-        news.append(db.query(models.News).filter(
+        news.extend(db.query(models.News).filter(
             models.News.region == data.region,
             models.News.language == data.language,
             models.News.category == k).order_by(func.random()).limit(v).all())
@@ -40,7 +38,7 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
     return news
 
 
-def send_shared_news(data: schemas.SharedNews, db) -> None:
+def send_sharednews(data: schemas.SharedNews, db) -> None:
     link = utilities.random_string(64)
     while db.query(models.SharedNews).filter(models.SharedNews.link == link).first() is not None:
         link = utilities.random_string(64)
@@ -49,7 +47,7 @@ def send_shared_news(data: schemas.SharedNews, db) -> None:
         user=data.user,
         category=data.category,
         link=link,
-        created=data.created,
+        created=datetime.datetime.now(),
         url=data.url,
         date=data.date,
         title=data.title,
@@ -67,10 +65,12 @@ def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
     del qr
 
     key = utilities.random_string(32)
-    path = os.path.join(config.QRCODE_PATH, data.user + config.QRCODE_FORMAT)
+    url = str(config.QRCODE_URL + "/" + data.user + "/" + key)
+    dir_path = os.path.join(config.QRCODE_PATH, data.user)
 
-    code = qrcode.make(str(config.QRCODE_URL + "/" + data.user + "/" + key))
-    code.save(path)
+    os.makedirs(dir_path, exist_ok=True)
+    code = qrcode.make(url)
+    code.save(os.path.join(dir_path, key + config.QRCODE_FORMAT))
 
     db.add(models.QRCode(
         user=data.user,
@@ -81,7 +81,7 @@ def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
         categories=data.categories
     ))
 
-    return path
+    return "/".join([config.STATIC_URL, "qrcode", data.user, key + config.QRCODE_FORMAT])
 
 
 def send_support(data: schemas.SupportMessage, db) -> None:
