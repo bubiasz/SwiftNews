@@ -2,6 +2,7 @@
 //  SwiftNews
 //
 
+import SwiftData
 import SwiftUI
 
 
@@ -12,6 +13,12 @@ struct NewsView: View {
     
     @State private var articleOffset: CGFloat = 0
     @State private var isSwiped = false
+    
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query var news: [NewsModel]
+    
+    @State var index: Int = 0
     
     var body: some View {
         NavigationStack {
@@ -26,7 +33,7 @@ struct NewsView: View {
                 Spacer()
                 
                 ScrollView {
-                    Text("Lorem ipsum dolor sit amet, consectetur")
+                    Text("\(news[index].title)")
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.bottom)
@@ -38,7 +45,7 @@ struct NewsView: View {
                             }
                         }
                     
-                    Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin neque felis, pellentesque a ipsum at, tincidunt tincidunt eros. Phasellus commodo ligula lobortis, consectetur ipsum id, dignissim justo. Integer sollicitudin aliquet lacinia. Fusce tortor felis, sagittis in tellus id, euismod auctor mauris. Nullam convallis libero id orci sagittis vehicula. Integer eu ante non enim aliquam euismod. Nulla at pellentesque lectus. Suspendisse sit amet purus et ipsum bibendum bibendum ut vitae nisi. Aenean eros nunc, dignissim ut justo non, cursus sodales arcu. Donec condimentum euismod eros a rutrum. Vestibulum eget quam ut nisi luctus tristique. Vivamus lobortis est vitae vulputate mollis. Vivamus turpis libero, accumsan ut dolor nec, finibus ultrices orci. Aliquam porttitor enim in lorem semper, non gravida est rhoncus. Donec quis tellus id ante hendrerit cursus. Nunc elementum quam eget eros tincidunt efficitur. Donec velit sem, dictum ac felis eu, commodo sollicitudin nulla. Curabitur justo justo, elementum in rhoncus vel, posuere sed lectus. Etiam et vestibulum est, ullamcorper ornare metus. Etiam in arcu vitae leo luctus tincidunt ac eu velit. Vivamus a efficitur nisi, luctus egestas mauris. Donec in sodales nulla. Sed in sem viverra, hendrerit nulla in, placerat ex. Donec sed risus fermentum, cursus ipsum vel, luctus risus. Duis vulputate pulvinar ligula, mattis rhoncus tellus aliquam non.")
+                    Text("\(news[index].content)")
                         .padding(.bottom)
                         .lineLimit(isContentExpanded ? nil : 20)
                         .onTapGesture {
@@ -73,7 +80,7 @@ struct NewsView: View {
                     .padding()
                 }
                 .padding(.vertical)
-                .frame(maxHeight: 595)
+                .frame(minHeight: 595, maxHeight: 595)
                 .offset(x: articleOffset)
                 .opacity(isSwiped ? 0 : 1)
                 .gesture(DragGesture(minimumDistance: 100.0, coordinateSpace: .local)
@@ -104,6 +111,11 @@ struct NewsView: View {
                                         isTitleExpanded = false
                                         articleOffset = 0
                                         isSwiped = false
+                                        index += 1
+                                        
+                                        if index >= news.count {
+                                            index = 0
+                                        }
                                     }
                                 }
                             } else {

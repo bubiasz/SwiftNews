@@ -3,25 +3,28 @@
 //
 
 import Charts
+import SwiftData
 import SwiftUI
 
 
 struct PreferencesView: View {
     @State private var selectedCategory: Int?
-    @State private var selectedCategoryName: CategorySchema?
+    @State private var selectedCategoryName: CategoryModel?
     @State var innerText: String = "Your Content Here"
     
-    let categoryList: [CategorySchema] = [
-        CategorySchema(name: "Country", value: 10),
-        CategorySchema(name: "World", value: 20),
-        CategorySchema(name: "Local", value: 5),
-        CategorySchema(name: "Business", value: 40),
-        CategorySchema(name: "Technology", value: 50),
-        CategorySchema(name: "Entertainment", value: 70),
-        CategorySchema(name: "Sports", value: 30),
-        CategorySchema(name: "Science", value: 30),
-        CategorySchema(name: "Health", value: 20),
-    ]
+    @Query var categories: [CategoryModel]
+    
+//    let categoryList: [CategorySchema] = [
+//        CategorySchema(name: "Country", value: 10),
+//        CategorySchema(name: "World", value: 20),
+//        CategorySchema(name: "Local", value: 5),
+//        CategorySchema(name: "Business", value: 40),
+//        CategorySchema(name: "Technology", value: 50),
+//        CategorySchema(name: "Entertainment", value: 70),
+//        CategorySchema(name: "Sports", value: 30),
+//        CategorySchema(name: "Science", value: 30),
+//        CategorySchema(name: "Health", value: 20),
+//    ]
     
     var body: some View {
         NavigationStack {
@@ -29,7 +32,7 @@ struct PreferencesView: View {
                 Spacer()
                 VStack {
                     VStack {
-                        Chart (categoryList) { category in
+                        Chart (categories) { category in
                             SectorMark(
                                 angle: .value("Points", category.value),
                                 innerRadius: .ratio(0.65),
@@ -105,7 +108,7 @@ struct PreferencesView: View {
     
     private func getSelectedCategory(value: Int) {
         var total = 0
-        _ = categoryList.first { category in
+        _ = categories.first { category in
             total += category.value
             if value <= total {
                 selectedCategoryName = category
