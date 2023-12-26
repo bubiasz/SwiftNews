@@ -12,7 +12,7 @@ struct SplashView: View {
     
     @State var isActive: Bool = false
     @State var opacity: Double = 1.0
-    @State private var drawingWidth = false
+    @State private var state: RotationState = .min
     
     var body: some View {
         ZStack {
@@ -21,22 +21,29 @@ struct SplashView: View {
             }
             else {
                 VStack {
+                    Image(uiImage: UIImage(named: "AppIcon")!)
+                        .resizable()
+                        .scaledToFit()
+                        .cornerRadius(8.0)
+                        .frame(width: 150, height: 150)
+                        .rotationEffect(state == .max ? .degrees(-40) : .degrees(40) , anchor: .top)
+                        .onAppear{
+                            let baseAnimation = Animation.easeInOut(duration: 1)
+                            let repeated = baseAnimation.repeatForever(autoreverses: true)
+                            withAnimation(repeated) {
+                                switch state {
+                                case .max:
+                                    state = .min
+                                case .min:
+                                    state = .max
+                                }
+                            }
+                        }
+                        .padding(.vertical)
+                    
                     Text("SwiftNews")
                         .font(.title)
                         .bold()
-                    
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color(.systemGray6))
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(.black)
-                            .frame(width: drawingWidth ? 250 : 0, alignment: .leading)
-                            .animation(.easeInOut(duration: 3), value: drawingWidth)
-                    }
-                    .frame(width: 250, height: 12)
-                    .onAppear {
-                        drawingWidth.toggle()
-                    }
                     
                 }
                 .padding()
@@ -131,6 +138,11 @@ struct SplashView: View {
             }
         }
     }
+}
+
+enum RotationState: Int {
+    case max
+    case min
 }
 
 //#Preview {

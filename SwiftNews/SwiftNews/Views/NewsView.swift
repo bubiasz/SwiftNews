@@ -10,6 +10,9 @@ struct NewsView: View {
     @State var isTitleExpanded: Bool = false
     @State var isContentExpanded: Bool = false
     
+    @State private var articleOffset: CGFloat = 0
+    @State private var isSwiped = false
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -71,6 +74,44 @@ struct NewsView: View {
                 }
                 .padding(.vertical)
                 .frame(maxHeight: 595)
+                .offset(x: articleOffset)
+                .opacity(isSwiped ? 0 : 1)
+                .gesture(DragGesture(minimumDistance: 100.0, coordinateSpace: .local)
+                    .onChanged {
+                        value in
+                        withAnimation {
+                            articleOffset = value.translation.width
+                        }
+                    }
+                    .onEnded { value in
+                        withAnimation {
+                            let screenWidth = UIScreen.main.bounds.width
+                            if abs(articleOffset) > screenWidth * 0.7 {
+                                articleOffset = articleOffset > 0 ? screenWidth : -screenWidth
+                                isSwiped = true
+                                switch(value.translation.width, value.translation.height) {
+                                    case (...0, -30...30):  print("left swipe")
+                                    case (0..., -30...30):  print("right swipe")
+                                    default:  print("no clue")
+                                }
+                                
+                                
+                                let customAnimation = Animation.timingCurve(0.2, 1, 1, 1, duration: 0.75)
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    withAnimation(customAnimation) {
+                                        isContentExpanded = false
+                                        isTitleExpanded = false
+                                        articleOffset = 0
+                                        isSwiped = false
+                                    }
+                                }
+                            } else {
+                                articleOffset = 0
+                            }
+                        }
+                    }
+                )
             }
             .padding()
         }
