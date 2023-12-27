@@ -3,6 +3,14 @@
 //
 
 import SwiftUI
+import SwiftData
+
+
+struct SupportMessage: Codable {
+    let user: String
+    let title: String
+    let message: String
+}
 
 
 struct MessageView: View {
@@ -15,13 +23,23 @@ struct MessageView: View {
     
     @Environment(\.presentationMode) var presentationMode
     
+    @Environment(\.modelContext) private var modelContext
+    @Query var user: [UserModel]
+    
     func hideKeyboard() {
         let resign = #selector(UIResponder.resignFirstResponder)
         UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
     }
     
+    func resetData() -> Void {
+        if !title.isEmpty && !content.isEmpty {
+            content = ""
+            title = ""
+            presentationMode.wrappedValue.dismiss()
+        }
+    }
+    
     func send() -> Void {
-        print(title + content)
         if(title.isEmpty) {
             alertMessage = "Can't send a message without a title!"
         }
@@ -29,6 +47,29 @@ struct MessageView: View {
             alertMessage = "Can't send an empty message!"
         }
         else {
+            Task {
+                do {
+                    let responseData: [String: String] = try await APIManager.shared.getData(from: "support/\(user[0].id)")
+                    print("Response Data: \(responseData)")
+                } catch {
+                    // Obsługa błędu
+                    print("Error: \(error)")
+                    let emptyResponse: [String: String] = [:] // Pusta tablica
+                    print("Empty Response Data: \(emptyResponse)")
+                    alertMessage = "Error sending your message"
+                }
+            }
+
+            Task {
+                let dataToSend = SupportMessage(
+                    user: "\(user[0].id)",
+                    title: title,
+                    message: content
+                )
+                let responseData: [String: String] = try await APIManager.shared.postData(data: dataToSend, to: "support")
+                print("Response Data: \(responseData)")
+            }
+            
             alertMessage = "Message sent successfully!"
         }
         showAlert = true
@@ -83,9 +124,7 @@ struct MessageView: View {
                         dismissButton: Alert.Button.default(
                             Text("OK"),
                             action: {
-                                content = ""
-                                title = ""
-                                presentationMode.wrappedValue.dismiss()
+                                resetData()
                             })
                     )
                 }
