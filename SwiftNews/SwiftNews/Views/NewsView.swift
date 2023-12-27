@@ -69,8 +69,18 @@ struct NewsView: View {
                         
                         Spacer()
                         
-                        Image(systemName: "globe")
-                        
+                        Button(action: {
+                            if UIApplication.shared.canOpenURL(URL(string: news[index].url)!) {
+                                UIApplication.shared.open(URL(string: news[index].url)!, options: [:], completionHandler: nil)
+                            }
+                            else {
+                                print("error opening site")
+                            }
+                        }) {
+                            Image(systemName: "globe")
+                                .foregroundColor(Color("foreground"))
+                        }
+
                         Spacer()
                         
                         Image(systemName: "square.and.arrow.up.fill")
@@ -113,9 +123,9 @@ struct NewsView: View {
                                         isSwiped = false
                                         index += 1
                                         
-                                        if index >= news.count {
-                                            index = 0
-                                        }
+//                                        if index >= news.count {
+//                                            index = 0
+//                                        }
                                     }
                                 }
                             } else {
