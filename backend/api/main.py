@@ -51,10 +51,13 @@ def make_user(db: Session = Depends(get_db)):
 #
 ###############
 
-@app.get("/api/config")
+@app.get("/api/config", response_model=schemas.Config)
 def get_config():
-    return list(schemas.ConfigItem(
-        language=k[0], region=k[1], categories=v) for k, v in config.CATEGORIES.items())
+    return schemas.Config(
+        times=[10, 20, 30],
+        locations=list(schemas.ConfigItem(
+            language=k[0], region=k[1], categories=v) for k, v in config.CATEGORIES.items())
+    )
 
 
 ###############
@@ -76,8 +79,6 @@ def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     news = services.read_newsfeed(data, db)
     usr.news = True
     db.commit()
-
-    print(type(news[0].date))
 
     return news
 

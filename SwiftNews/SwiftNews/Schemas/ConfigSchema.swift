@@ -5,8 +5,13 @@
 import Foundation
 
 
-struct ConfigSchema: Codable {
+struct ConfigItem: Codable {
     let language: String
     let region: String
-    let categories: [String]?
+    let categories: [String]
+}
+
+struct ConfigSchema: Codable {
+    let times: [Int]
+    let locations: [ConfigItem]
 }

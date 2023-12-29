@@ -7,20 +7,18 @@ import SwiftUI
 
 
 struct NewsView: View {
-    
-    @State var isTitleExpanded: Bool = false
-    @State var isContentExpanded: Bool = false
-    
-    @State private var articleOffset: CGFloat = 0
-    @State private var isSwiped = false
-    
     @Environment(\.modelContext) private var modelContext
     
-    @Query var news: [NewsModel]
+    @Query private var userQuery: [UserModel]
+    @Query(filter: #Predicate<NewsModel> { $0.saved == false }) private var newsQuery: [NewsModel]
     
-    @State var index: Int = 0
+    @State private var user: UserModel?
     
-    @Query var categories: [CategoryModel]
+    @State private var index: Int = 0
+    @State private var isSwiped: Bool = false
+    @State private var articleOffset: CGFloat = 0
+    @State private var isTitleExpanded: Bool = false
+    @State private var isContentExpanded: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -35,7 +33,7 @@ struct NewsView: View {
                 Spacer()
                 
                 ScrollView {
-                    Text("\(news[index].title)")
+                    Text("\(newsQuery[index].title)")
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.bottom)
@@ -47,7 +45,7 @@ struct NewsView: View {
                             }
                         }
                     
-                    Text("\(news[index].content)")
+                    Text("\(newsQuery[index].content)")
                         .padding(.bottom)
                         .lineLimit(isContentExpanded ? nil : 20)
                         .onTapGesture {
@@ -60,7 +58,7 @@ struct NewsView: View {
                         Spacer()
                         
                         Button(action: {
-                            handleLike(news: news[index], swiped: false)
+                            handleLike(news: newsQuery[index], swiped: false)
                         }) {
                             Image(systemName: "hand.thumbsup.fill")
                                 .foregroundColor(Color("foreground"))
@@ -69,7 +67,7 @@ struct NewsView: View {
                         Spacer()
                         
                         Button(action: {
-                            handleDislike(news: news[index], swiped: false)
+                            handleDislike(news: newsQuery[index], swiped: false)
                         }) {
                             Image(systemName: "hand.thumbsdown.fill")
                                 .foregroundColor(Color("foreground"))
@@ -78,7 +76,7 @@ struct NewsView: View {
                         Spacer()
                         
                         Button(action: {
-                            handleSave(news: news[index])
+                            handleSave(news: newsQuery[index])
                         }) {
                             Image(systemName: "heart.fill")
                                 .foregroundColor(Color("foreground"))
@@ -87,7 +85,7 @@ struct NewsView: View {
                         Spacer()
                         
                         Button(action: {
-                            handleUrl(news: news[index])
+                            handleUrl(news: newsQuery[index])
                         }) {
                             Image(systemName: "globe")
                                 .foregroundColor(Color("foreground"))
@@ -123,8 +121,8 @@ struct NewsView: View {
                                 articleOffset = articleOffset > 0 ? screenWidth : -screenWidth
                                 isSwiped = true
                                 switch(value.translation.width, value.translation.height) {
-                                    case (...0, -30...30):  handleDislike(news: news[index], swiped: true)
-                                    case (0..., -30...30):  handleLike(news: news[index], swiped: true)
+                                    case (...0, -30...30):  handleDislike(news: newsQuery[index], swiped: true)
+                                    case (0..., -30...30):  handleLike(news: newsQuery[index], swiped: true)
                                     default: do {}
                                 }
                                 
@@ -143,6 +141,9 @@ struct NewsView: View {
                 )
             }
             .padding()
+            .onAppear() {
+                user = userQuery.first
+            }
         }
     }
     
@@ -155,11 +156,11 @@ struct NewsView: View {
     }
     
     func handleDislike(news: NewsModel, swiped: Bool) -> Void {
-        if let matchingCategory = categories.first(where: { $0.name == news.category }) {
-            if matchingCategory.value != 0 {
-                matchingCategory.value -= 1
+        if let value = user!.categories![news.category] {
+            if value == 1 {
+                return
             }
-            
+            user!.categories![news.category]! -= 1
             try? modelContext.save()
         }
         
@@ -169,10 +170,8 @@ struct NewsView: View {
     }
     
     func handleLike(news: NewsModel, swiped: Bool) -> Void {
-        if let matchingCategory = categories.first(where: { $0.name == news.category }) {
-            matchingCategory.value += 1
-            resetValues()
-
+        if user != nil {
+            user!.categories![news.category]! += 1
             try? modelContext.save()
         }
         

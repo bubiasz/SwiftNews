@@ -9,8 +9,7 @@ class Newsfeed(BaseModel):
     # User data fields
     user: str
     time: int
-    region: str
-    language: str
+    location: str
     categories: dict[str, int]
 
 
@@ -70,3 +69,8 @@ class ConfigItem(BaseModel):
     language: str
     region: str
     categories: list[str]
+
+
+class Config(BaseModel):
+    times: list[int]
+    locations: list[ConfigItem]

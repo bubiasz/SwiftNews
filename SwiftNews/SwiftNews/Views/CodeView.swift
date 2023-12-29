@@ -30,7 +30,7 @@ struct CodeView: View {
                     // Action
                 }) {
                     HStack {
-                        Image(systemName: "qrcode.viewfinder") // Replace "qrcode.viewfinder" with your QRCode icon name
+                        Image(systemName: "qrcode.viewfinder")
                             .font(.system(size: 20))
                             .foregroundColor(Color.background)
                         

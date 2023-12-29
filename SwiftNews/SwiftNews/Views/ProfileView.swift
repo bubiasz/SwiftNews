@@ -27,13 +27,17 @@ struct CustomButton: View {
 
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
+    @Query private var user: [UserModel]
+    @Query private var config: [ConfigModel]
     
-    let timeList: [Int] = [10, 20, 30]
-    @State private var selectedTime: Int = 10
+    @State private var times: [Int] = []
+    @State private var locations: [String] = []
     
-    @Query var locationList: [LocationModel]
-    @State private var selectedLocation: LocationModel?
+    @State private var timePick: Int = 0
+    @State private var locationPick: String = ""
+    
     @State private var location: String?
+    
     
     var body: some View {
         NavigationStack {
@@ -60,33 +64,34 @@ struct ProfileView: View {
                     }
                 }
                 .padding(.vertical)
-                
+                        
                 VStack(alignment: .leading, content:  {
                     Text("News number daily")
                         .font(.headline)
                     
-                    Picker("Select a number", selection: $selectedTime) {
-                        ForEach(timeList, id: \.self) {
+                    Picker("Select a number", selection: $timePick) {
+                        ForEach(times, id: \.self) {
                             Text("\($0)")
                         }
                     }
                     .pickerStyle(.segmented)
                 })
                 .padding(.vertical)
-                
+                        
                 VStack(alignment: .leading, content: {
-                    Picker(selection: $selectedLocation, label: 
+                    HStack {
                         Text("Your country & language")
-                            .foregroundStyle(Color.foreground)
-                            .font(.headline)) {
-                            ForEach(locationList, id: \.self) { location in
-                                Text("\(location.region), \(location.language)")
+                            .font(.headline)
+                        Spacer()
+                        Picker("Select location", selection: $locationPick) {
+                            ForEach(locations, id: \.self) { location in
+                                Text("\(location)")
                             }
                         }
-                        .pickerStyle(.navigationLink)
+                    }
                     
                     HStack {
-                        Text("Find my location")
+                        Text("Find me")
                         Image(systemName: "location.fill.viewfinder")
                     }
                     .foregroundStyle(Color.blue)
@@ -103,11 +108,17 @@ struct ProfileView: View {
             .padding()
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                times = config.first!.times
+                locations = Array((config.first?.locations.keys)!)
+                timePick = user.first!.time
+                locationPick = user.first!.location
+            }
         }
     }
 }
 
 //#Preview {
 //    ProfileView()
-//        .modelContainer(for: [UserModel.self, LocationModel.self, NewsModel.self])
+//        .modelContainer(for: [ConfigModel.self, UserModel.self])
 //}

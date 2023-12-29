@@ -7,19 +7,7 @@ import SwiftData
 
 
 struct SavedNewsView: View {
-//    @State private var savedNews: [(title: String, date: String)] = [
-//            ("Title 1", "November 1, 2023"),
-//            ("Title 2", "December 5, 2023"),
-//            ("Title 3", "December 8, 2023"),
-//            ("Title 4", "December 16, 2023"),
-//            ("Title 5", "December 24, 2023"),
-//            ("Title 6", "December 31, 2023"),
-//            ("Title 7", "December 31, 2023"),
-//            ("Title 8", "December 31, 2023"),
-//            ("Title 9", "December 31, 2023"),
-//            ("Title 9", "December 31, 2023"),
-//            ("Title 9", "December 31, 2023"),
-//        ]
+    @Environment(\.modelContext) private var modelContext
     
     @Query(filter: #Predicate<NewsModel> { $0.saved == true }) var savedNews: [NewsModel]
     

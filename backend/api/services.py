@@ -24,15 +24,17 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
         categories[random.choice(list(categories.keys()))] += 1
 
     rest_categories = set(data.categories.keys()) - set(categories.keys())
-    for _ in range(rest_time):
-        k = random.choice(list(rest_categories))
-        categories[k] = categories.get(k, 0) + 1
+    if rest_categories:
+        for _ in range(rest_time):
+            k = random.choice(list(rest_categories))
+            categories[k] = categories.get(k, 0) + 1
 
-    news = []
+    region, language = data.location.lower().split()
+    news = list()
     for k, v in categories.items():
         news.extend(db.query(models.News).filter(
-            models.News.region == data.region,
-            models.News.language == data.language,
+            models.News.region == region,
+            models.News.language == language,
             models.News.category == k).order_by(func.random()).limit(v).all())
 
     return news

@@ -7,19 +7,16 @@ import SwiftUI
 
 
 struct SplashView: View {
-    
     @Environment(\.modelContext) private var modelContext
-    
-    @Query var user: [UserModel]
-    @Query(filter: #Predicate<NewsModel> { $0.saved == false }) var news: [NewsModel]
-    @Query var categories: [CategoryModel]
-    
-    
-    @Query(filter: #Predicate<LocationModel> { $0.region == "gb" }) var location: [LocationModel]
 
+    @Query private var userQuery: [UserModel]
+    @Query(filter: #Predicate<NewsModel> { $0.saved == false }) private var newsQuery: [NewsModel]
     
-    @State var isActive: Bool = false
-    @State var opacity: Double = 1.0
+    @State private var user: UserModel?
+    @State private var config: ConfigModel?
+    
+    @State private var isActive: Bool = false
+    @State private var opacity: Double = 1.0
     @State private var state: RotationState = .min
     
     var body: some View {
@@ -58,109 +55,149 @@ struct SplashView: View {
             }
         }
         .onAppear {
-            do {
-                try modelContext.delete(model: NewsModel.self)
-            }
-            catch {}
+            user = userQuery.first ?? nil
             
-            if user.count == 0 {
-                getUser()
+            Task {
+                await fetchAPI()
             }
-            getConfig()
-            getNews()
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 withAnimation {
                     self.isActive = true
-                    
-                    for category in location[0].categories! {
-                        let categoryModel = CategoryModel(name: category, value: 0)
-                        modelContext.insert(categoryModel)
-                    }
-                    
-//                    for category in categories {
-//                        print("\(category.name): \(category.value)")
-//                    }
-                    
-                    for category in categories {
-                        if !(location[0].categories ?? []).contains(category.name) {
-                            
-                            if let index = categories.firstIndex(of: category) {
-                                print("Removed \(categories[index].name)")
-                                modelContext.delete(categories[index])
-                            }
-                        }
-                    }
                 }
             }
             
         }
     }
     
-    func getUser() {
-        Task {
-            do {
-                let user: UserSchema = try await APIManager.shared.getData(from: "user")
-                
-                let userModel = UserModel(id: user.uniqueId)
-                modelContext.insert(userModel)
-            }
-            catch {
-                print("Error: \(error)")
+    func fetchAPI() async {
+        if await getConfig() {
+            if await getUser() {
+                _ = await getNews()
             }
         }
     }
     
-    func getConfig() {
-        Task {
+    func getUser() async -> Bool {
+        var userid: String
+        if user == nil {
             do {
-                let languages: [ConfigSchema] = try await APIManager.shared.getData(from: "config")
-                
-                for language in languages {
-                    let configModel = LocationModel(
-                        language: language.language,
-                        region: language.region,
-                        categories: language.categories
-                    )
-                    modelContext.insert(configModel)
-                }
+                let tmp: UserSchema = try await APIManager.shared.getData(from: "user")
+                userid = tmp.uniqueId
             }
             catch {
-                print("Error: \(error)")
+                // TODO: alert that couldn't get a username
+                return true
             }
         }
+        else {
+            userid = self.user!.id
+        }
+        
+        let location = user?.location ?? "PL PL"
+        
+        var categories: [String: Int] = [:]
+        if let configCategories = config?.locations[location] {
+            for category in configCategories {
+                categories[category] = user?.categories?[category] ?? 1
+            }
+        }
+        
+        user = UserModel(
+            id: userid,
+            time: user?.time ?? 10,
+            location: location,
+            categories: [
+                "business": 100,
+                "sport": 0
+            ]
+        )
+        
+        do {
+            try modelContext.delete(model: UserModel.self)
+            modelContext.insert(user!)
+            try modelContext.save()
+        }
+        catch {
+            // TODO: alert that couldn't update user
+            return true
+        }
+        return true
     }
     
-    func getNews() {
-        Task {
-            do {
-                let dataToSend = NewsfeedSchema(
-                    user: "kqaxIkZcKKHOcIboYMeZLHBXUdgalSHH",
-                    time: 10,
-                    region: "pl",
-                    language: "pl",
-                    categories: [
-                        "business": 100,
-                        "sports": 0,
-                        "country": 0,
-                    ]
+    func getConfig() async -> Bool{
+        var configSchema: ConfigSchema
+        do {
+            configSchema = try await APIManager.shared.getData(from: "config")
+        }
+        catch {
+            // TODO: alert that couldn't update config
+            return true
+        }
+        
+        var locations: [String: [String]] = [:]
+        for location in configSchema.locations {
+            locations["\(location.region) \(location.language)".uppercased()] = location.categories
+        }
+        
+        config = ConfigModel(
+            times: configSchema.times,
+            locations: locations
+        )
+        
+        do {
+            try modelContext.delete(model: ConfigModel.self)
+            modelContext.insert(config!)
+            try modelContext.save()
+        }
+        catch {
+            // TODO: alert that couldn't update config
+            return true
+        }
+        return true
+    }
+    
+    func getNews() async {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        let today: String = formatter.string(from: Date())
+        if newsQuery.first?.date ?? "" == today {
+            return
+        }
+        
+        var newsSchemas: [NewsSchema] = []
+        do {
+            let dataToSend = NewsfeedSchema(
+                user: user!.id,
+                time: user!.time,
+                location: user!.location,
+                categories: user!.categories!
+            )
+            newsSchemas = try await APIManager.shared.postData(data: dataToSend, to: "newsfeed")
+        }
+        catch {
+            // TODO: alert couldn't load news
+        }
+        
+        do {
+            try modelContext.delete(model: NewsModel.self, where: #Predicate { $0.saved == false })
+            for news in newsSchemas {
+                let newsModel = NewsModel(
+                    url: news.url,
+                    category: news.category,
+                    date: news.date,
+                    title: news.title,
+                    content: news.content,
+                    saved: false
                 )
-                let newsList: [NewsSchema] = try await APIManager.shared.postData(data: dataToSend, to: "newsfeed")
-                
-                for news in newsList {
-                    let newsModel = NewsModel(
-                        url: news.url,
-                        category: news.category,
-                        date: news.date,
-                        title: news.title,
-                        content: news.content,
-                        saved: false
-                    )
-                    modelContext.insert(newsModel)
-                }
+                modelContext.insert(newsModel)
             }
-            catch {
-                print("Error: \(error)")
-            }
+            try modelContext.save()
+        }
+        catch {
+            // TODO: alert that couldn't load news
+            return
         }
     }
 }
@@ -172,5 +209,5 @@ enum RotationState: Int {
 
 #Preview {
     SplashView()
-        .modelContainer(for: [LocationModel.self, NewsModel.self, UserModel.self, CategoryModel.self])
+        .modelContainer(for: [NewsModel.self, UserModel.self, ConfigModel.self])
 }
