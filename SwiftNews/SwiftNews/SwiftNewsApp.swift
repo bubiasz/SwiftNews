@@ -12,6 +12,6 @@ struct SwiftNewsApp: App {
         WindowGroup {
             SplashView()
         }
-        .modelContainer(for: [UserModel.self, LocationModel.self, NewsModel.self, CategoryModel.self])
+        .modelContainer(for: [ConfigModel.self, UserModel.self, NewsModel.self])
     }
 }
