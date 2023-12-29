@@ -20,6 +20,8 @@ struct NewsView: View {
     
     @State var index: Int = 0
     
+    @Query var categories: [CategoryModel]
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -27,7 +29,7 @@ struct NewsView: View {
                     Image(systemName: "person.fill")
                         .font(.title2)
                         .foregroundStyle(Color("foreground"))
-                        .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .trailing)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 
                 Spacer()
@@ -37,7 +39,7 @@ struct NewsView: View {
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.bottom)
-                        .frame(maxWidth: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .lineLimit(isTitleExpanded ? nil : 1)
                         .onTapGesture {
                             withAnimation {
@@ -57,25 +59,35 @@ struct NewsView: View {
                     HStack {
                         Spacer()
                         
-                        Image(systemName: "hand.thumbsup.fill")
-                        
-                        Spacer()
-                        
-                        Image(systemName: "hand.thumbsdown.fill")
-                        
-                        Spacer()
-                        
-                        Image(systemName: "heart.fill")
+                        Button(action: {
+                            handleLike(news: news[index], swiped: false)
+                        }) {
+                            Image(systemName: "hand.thumbsup.fill")
+                                .foregroundColor(Color("foreground"))
+                        }
                         
                         Spacer()
                         
                         Button(action: {
-                            if UIApplication.shared.canOpenURL(URL(string: news[index].url)!) {
-                                UIApplication.shared.open(URL(string: news[index].url)!, options: [:], completionHandler: nil)
-                            }
-                            else {
-                                print("error opening site")
-                            }
+                            handleDislike(news: news[index], swiped: false)
+                        }) {
+                            Image(systemName: "hand.thumbsdown.fill")
+                                .foregroundColor(Color("foreground"))
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            handleSave(news: news[index])
+                        }) {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(Color("foreground"))
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            handleUrl(news: news[index])
                         }) {
                             Image(systemName: "globe")
                                 .foregroundColor(Color("foreground"))
@@ -83,7 +95,11 @@ struct NewsView: View {
 
                         Spacer()
                         
-                        Image(systemName: "square.and.arrow.up.fill")
+                        Button(action: {
+                        }) {
+                            Image(systemName: "square.and.arrow.up.fill")
+                                .foregroundColor(Color("foreground"))
+                        }
                         
                         Spacer()
                     }
@@ -107,25 +123,16 @@ struct NewsView: View {
                                 articleOffset = articleOffset > 0 ? screenWidth : -screenWidth
                                 isSwiped = true
                                 switch(value.translation.width, value.translation.height) {
-                                    case (...0, -30...30):  print("left swipe")
-                                    case (0..., -30...30):  print("right swipe")
-                                    default:  print("no clue")
+                                    case (...0, -30...30):  handleDislike(news: news[index], swiped: true)
+                                    case (0..., -30...30):  handleLike(news: news[index], swiped: true)
+                                    default: do {}
                                 }
-                                
                                 
                                 let customAnimation = Animation.timingCurve(0.2, 1, 1, 1, duration: 0.75)
                                 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                     withAnimation(customAnimation) {
-                                        isContentExpanded = false
-                                        isTitleExpanded = false
-                                        articleOffset = 0
-                                        isSwiped = false
-                                        index += 1
-                                        
-//                                        if index >= news.count {
-//                                            index = 0
-//                                        }
+                                        resetValues()
                                     }
                                 }
                             } else {
@@ -139,6 +146,51 @@ struct NewsView: View {
         }
     }
     
+    func resetValues() -> Void {
+        isContentExpanded = false
+        isTitleExpanded = false
+        articleOffset = 0
+        isSwiped = false
+        index += 1
+    }
+    
+    func handleDislike(news: NewsModel, swiped: Bool) -> Void {
+        if let matchingCategory = categories.first(where: { $0.name == news.category }) {
+            if matchingCategory.value != 0 {
+                matchingCategory.value -= 1
+            }
+            
+            try? modelContext.save()
+        }
+        
+        if !swiped {
+            resetValues()
+        }
+    }
+    
+    func handleLike(news: NewsModel, swiped: Bool) -> Void {
+        if let matchingCategory = categories.first(where: { $0.name == news.category }) {
+            matchingCategory.value += 1
+            resetValues()
+
+            try? modelContext.save()
+        }
+        
+        if !swiped {
+            resetValues()
+        }
+    }
+    
+    func handleSave(news: NewsModel) -> Void {
+        news.saved.toggle()
+        try? modelContext.save()
+    }
+    
+    func handleUrl(news: NewsModel) -> Void {
+        if UIApplication.shared.canOpenURL(URL(string: news.url)!) {
+            UIApplication.shared.open(URL(string: news.url)!, options: [:], completionHandler: nil)
+        }
+    }
 }
 
 //#Preview {
