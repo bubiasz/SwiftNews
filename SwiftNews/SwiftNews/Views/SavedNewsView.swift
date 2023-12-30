@@ -21,19 +21,22 @@ struct SavedNewsView: View {
                     List {
                         ForEach(savedNews, id: \.title) { item in
                             HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(item.title)
-                                        .font(.headline)
+                                NavigationLink(destination: SingleNewsView(news: item)) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        
+                                        Text(item.title)
+                                            .font(.headline)
+                                        
+                                        Text(item.date)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
                                     
-                                    Text(item.date)
-                                        .font(.subheadline)
-                                        .foregroundColor(.gray)
+//                                    Spacer()
+//                                    
+//                                    Image(systemName: "chevron.right")
+//                                        .foregroundColor(.gray)
                                 }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
                             }
                         }
                     }

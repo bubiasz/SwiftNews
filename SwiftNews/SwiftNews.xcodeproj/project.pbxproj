@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2E520C432B3FC0FA008A1C2B /* SingleNewsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E520C422B3FC0FA008A1C2B /* SingleNewsView.swift */; };
 		F42119022B29D25C0062579F /* SwiftNewsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42119012B29D25C0062579F /* SwiftNewsApp.swift */; };
 		F42119042B29D25C0062579F /* NewsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42119032B29D25C0062579F /* NewsView.swift */; };
 		F42119062B29D25D0062579F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F42119052B29D25D0062579F /* Assets.xcassets */; };
@@ -30,6 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2E520C422B3FC0FA008A1C2B /* SingleNewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleNewsView.swift; sourceTree = "<group>"; };
 		F42118FE2B29D25C0062579F /* SwiftNews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftNews.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F42119012B29D25C0062579F /* SwiftNewsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftNewsApp.swift; sourceTree = "<group>"; };
 		F42119032B29D25C0062579F /* NewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsView.swift; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				F42119192B29D7F70062579F /* PreferencesView.swift */,
 				F42119172B29D7BF0062579F /* CodeView.swift */,
 				F42119112B29D3F30062579F /* MessageView.swift */,
+				2E520C422B3FC0FA008A1C2B /* SingleNewsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -226,6 +229,7 @@
 				F4FA29F62B3A1A270077011C /* NewsSchema.swift in Sources */,
 				F4FA29F22B3A19320077011C /* UserSchema.swift in Sources */,
 				F4FA29FC2B3A1CD50077011C /* CodeSchema.swift in Sources */,
+				2E520C432B3FC0FA008A1C2B /* SingleNewsView.swift in Sources */,
 				F49841AD2B3F112000E1E9EF /* ConfigModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
