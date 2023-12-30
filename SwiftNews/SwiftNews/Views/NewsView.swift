@@ -170,10 +170,14 @@ struct NewsView: View {
     }
     
     func handleLike(news: NewsModel, swiped: Bool) -> Void {
-        if user != nil {
+        if user!.categories![news.category] != nil {
             user!.categories![news.category]! += 1
             try? modelContext.save()
         }
+//        if user != nil {
+//            user!.categories![news.category]! += 1
+//            try? modelContext.save()
+//        }
         
         if !swiped {
             resetValues()
@@ -181,8 +185,11 @@ struct NewsView: View {
     }
     
     func handleSave(news: NewsModel) -> Void {
-        news.saved.toggle()
-        try? modelContext.save()
+        if user!.categories![news.category] != nil {
+            user!.categories![news.category]! += 1
+            news.saved.toggle()
+            try? modelContext.save()
+        }
     }
     
     func handleUrl(news: NewsModel) -> Void {
