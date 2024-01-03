@@ -45,14 +45,14 @@ class QRCodeSchema(BaseModel):
 
     # QR code data fields
     time: int
-    region: str
-    language: str
+    location: str
     categories: dict[str, int]
 
 
 # Used in support [get]
 class SupportResponse(BaseModel):
     # Support message data fields
+    id: Optional[int]
     response: Optional[str]
 
 

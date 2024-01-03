@@ -53,8 +53,7 @@ class QRCode(database.Base):
     user = sql.Column(sql.String(32), index=True)
     key = sql.Column(sql.String(32), index=True)
     time = sql.Column(sql.Integer)
-    language = sql.Column(sql.String(64))
-    region = sql.Column(sql.String(64))
+    location = sql.Column(sql.String(64))
     categories = sql.Column(sql.JSON)
 
 

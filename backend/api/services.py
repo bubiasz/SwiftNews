@@ -56,7 +56,7 @@ def send_sharednews(data: schemas.SharedNews, db) -> None:
         content=data.content
     ))
 
-    return None
+    return "/".join([config.BASE_URL, "api/sharednews", data.user, link])
 
 
 def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
@@ -78,8 +78,7 @@ def make_qrcode(data: schemas.QRCodeSchema, db) -> str:
         user=data.user,
         key=key,
         time=data.time,
-        region=data.region,
-        language=data.language,
+        location=data.location,
         categories=data.categories
     ))
 

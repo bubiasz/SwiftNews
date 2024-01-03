@@ -42,7 +42,7 @@ def make_user(db: Session = Depends(get_db)):
     usr = services.make_user(db)
     db.commit()
 
-    return JSONResponse(content={"unique_id": usr})
+    return JSONResponse(content={"id": usr})
 
 
 ###############
@@ -79,6 +79,8 @@ def read_newsfeed(data: schemas.Newsfeed, db: Session = Depends(get_db)):
     news = services.read_newsfeed(data, db)
     usr.news = True
     db.commit()
+
+    print(news)
 
     return news
 
@@ -119,11 +121,13 @@ def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db)):
     if len(news) > config.SHARED_NEWS_SEND_LIMIT:
         raise HTTPException(status_code=429, detail="Daily shared news limit reached")
 
-    services.send_sharednews(data, db)
+    url = services.send_sharednews(data, db)
     usr.shared_reads += 1
     db.commit()
 
-    return JSONResponse(content={"message": "Shared news sent"})
+    print(url)
+
+    return JSONResponse(content={"url": url})
 
 
 ###############
@@ -134,19 +138,26 @@ def send_sharednews(data: schemas.SharedNews, db: Session = Depends(get_db)):
 
 @app.get("/api/qrcode/{user}/{key}", response_model=schemas.QRCodeSchema)
 def read_qrcode(user: str, key: str, db: Session = Depends(get_db)):
+    print(user)
+
     usr = db.query(models.User).filter(models.User.user == user).first()
 
     if usr is None:
+        print("^" * 20)
         raise HTTPException(status_code=404, detail="Invalid user")
 
-    if usr.qrcode_reads > config.QRCODE_READS_LIMIT:
-        raise HTTPException(status_code=429, detail="Daily read QR code limit reached")
+    # if usr.qrcode_reads > config.QRCODE_READS_LIMIT:
+    #     raise HTTPException(status_code=429, detail="Daily read QR code limit reached")
+
+    print(user, key)
 
     data = db.query(models.QRCode).filter(
         models.QRCode.user == user, models.QRCode.key == key).first()
 
     usr.qrcode_reads += 1
     db.commit()
+
+    print(data)
 
     if data is None:
         raise HTTPException(status_code=404, detail="QR code not found")
@@ -168,7 +179,7 @@ def make_qrcode(data: schemas.QRCodeSchema, db: Session = Depends(get_db)):
     usr.qrcode_makes += 1
     db.commit()
 
-    return JSONResponse(content={"qr": qr})
+    return JSONResponse(content={"url": qr})
 
 
 ###############
