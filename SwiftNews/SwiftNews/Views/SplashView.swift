@@ -1,128 +1,118 @@
 //
+//  SplashView.swift
 //  SwiftNews
 //
 
+import Foundation
 import SwiftData
 import SwiftUI
 
-
 struct SplashView: View {
+    // Database connection
     @Environment(\.modelContext) private var modelContext
-
     @Query private var userQuery: [UserModel]
     @Query(filter: #Predicate<NewsModel> { $0.saved == false }) private var newsQuery: [NewsModel]
     
+    // onAppear variables
     @State private var user: UserModel?
     @State private var config: ConfigModel?
     
-    @State private var isActive: Bool = false
-    @State private var opacity: Double = 1.0
+    // animation variables
+    @State private var finished: Bool = false
     @State private var state: RotationState = .min
     
+    // alert variables
+    @State private var alert: Bool = false
+    
+    // shared news variables
+    @State private var isSheetVisible: Bool = false
+    @State private var sharedNews: NewsModel? = nil
+    
+    private enum RotationState: Int {
+        case max
+        case min
+    }
+    
+    // View implementation
     var body: some View {
         ZStack {
-            if self.isActive {
-                NewsView()
-            }
-            else {
+            if !self.finished {
                 VStack {
                     Image(uiImage: UIImage(named: "AppIcon")!)
                         .resizable()
                         .scaledToFit()
-                        .cornerRadius(8.0)
+                        .cornerRadius(10.0)
                         .frame(width: 150, height: 150)
-                        .rotationEffect(state == .max ? .degrees(-15) : .degrees(15) , anchor: .top)
-                        .onAppear{
-                            let baseAnimation = Animation.easeInOut(duration: 1)
-                            let repeated = baseAnimation.repeatForever(autoreverses: true)
+                        .overlay(RoundedRectangle(cornerRadius: 10.0)
+                            .stroke(Color("foreground"), lineWidth: 2))
+                        .rotationEffect(state == .max ? .degrees(-45) : .degrees(45) , anchor: .center)
+                        .padding(.bottom, 75)
+                        .onAppear {
+                            let repeated = Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true)
                             withAnimation(repeated) {
                                 switch state {
-                                case .max:
-                                    state = .min
-                                case .min:
-                                    state = .max
+                                    case .max:
+                                        state = .min
+                                    case .min:
+                                        state = .max
                                 }
                             }
                         }
-                        .padding(.vertical)
                     
                     Text("SwiftNews")
                         .font(.title)
                         .bold()
                     
+                    Text("Your daily informant")
                 }
                 .padding()
+            }
+            else {
+                NewsView(alertFromSplashView: $alert)
             }
         }
         .onAppear {
             user = userQuery.first ?? nil
-            
             Task {
-                await fetchAPI()
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                withAnimation {
-                    self.isActive = true
+                if await getConfig() {
+                    if await getUser() {
+                        await getNews()
+                        await getMessages()
+                    }
                 }
             }
             
-        }
-    }
-    
-    func fetchAPI() async {
-        if await getConfig() {
-            if await getUser() {
-                _ = await getNews()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                withAnimation {
+                    self.finished = true
+                }
             }
         }
-    }
-    
-    func getUser() async -> Bool {
-        var userid: String
-        if user == nil {
-            do {
-                let tmp: UserSchema = try await APIManager.shared.getData(from: "user")
-                userid = tmp.uniqueId
+        .onOpenURL { url in
+            guard url.scheme == "swiftnews" else {
+                return
             }
-            catch {
-                // TODO: alert that couldn't get a username
-                return true
+            let newsData = url.absoluteString.replacingOccurrences(of: "swiftnews://", with: "")
+            guard newsData.count == 97 else {
+                return
             }
-        }
-        else {
-            userid = self.user!.id
-        }
-        
-        let location = user?.location ?? "PL PL"
-        
-        var categories: [String: Int] = [:]
-        if let configCategories = config?.locations[location] {
-            for category in configCategories {
-                categories[category] = user?.categories?[category] ?? 1
+            Task {
+                do {
+                    let openedNews: NewsSchema = try await APIManager.shared.getData(from: "sharednews/" + newsData)
+                    sharedNews = NewsModel(url: openedNews.url,
+                                           category: openedNews.category,
+                                           date: openedNews.date,
+                                           title: openedNews.title,
+                                           content: openedNews.content)
+                    isSheetVisible = true
+                } catch {
+                    alert.toggle()
+                }
             }
         }
-        
-        user = UserModel(
-            id: userid,
-            time: user?.time ?? 10,
-            location: location,
-            categories: [
-                "business": 100,
-                "sport": 0
-            ]
-        )
-        
-        do {
-            try modelContext.delete(model: UserModel.self)
-            modelContext.insert(user!)
-            try modelContext.save()
+        .sheet(isPresented: $isSheetVisible) {
+            SharedNewsView(news: $sharedNews)
         }
-        catch {
-            // TODO: alert that couldn't update user
-            return true
-        }
-        return true
     }
     
     func getConfig() async -> Bool{
@@ -131,7 +121,7 @@ struct SplashView: View {
             configSchema = try await APIManager.shared.getData(from: "config")
         }
         catch {
-            // TODO: alert that couldn't update config
+            alert = true
             return true
         }
         
@@ -151,7 +141,52 @@ struct SplashView: View {
             try modelContext.save()
         }
         catch {
-            // TODO: alert that couldn't update config
+            alert = true
+            return true
+        }
+        return true
+    }
+    
+    func getUser() async -> Bool {
+        var userid: String
+        if user == nil {
+            do {
+                let tmp: UserSchema = try await APIManager.shared.getData(from: "user")
+                userid = tmp.id
+            }
+            catch {
+                // TODO: alert that couldn't get a username
+                alert = true
+                return true
+            }
+        }
+        else {
+            userid = self.user!.id
+        }
+        
+        let location = user?.location ?? "PL PL"
+        
+        var categories: [String: Int] = [:]
+        if let configCategories = config?.locations[location] {
+            for category in configCategories {
+                categories[category] = user?.categories[category] ?? 10
+            }
+        }
+        
+        user = UserModel(
+            id: userid,
+            time: user?.time ?? 10,
+            location: location,
+            categories: categories
+        )
+        
+        do {
+            try modelContext.delete(model: UserModel.self)
+            modelContext.insert(user!)
+            try modelContext.save()
+        }
+        catch {
+            alert = true
             return true
         }
         return true
@@ -168,16 +203,17 @@ struct SplashView: View {
         
         var newsSchemas: [NewsSchema] = []
         do {
-            let dataToSend = NewsfeedSchema(
+            let dataToSend = NewsPostSchema(
                 user: user!.id,
                 time: user!.time,
                 location: user!.location,
-                categories: user!.categories!
+                categories: user!.categories
             )
             newsSchemas = try await APIManager.shared.postData(data: dataToSend, to: "newsfeed")
         }
         catch {
-            // TODO: alert couldn't load news
+            alert = true
+            return
         }
         
         do {
@@ -196,18 +232,34 @@ struct SplashView: View {
             try modelContext.save()
         }
         catch {
-            // TODO: alert that couldn't load news
+            alert = true
             return
         }
     }
-}
-
-enum RotationState: Int {
-    case max
-    case min
-}
-
-#Preview {
-    SplashView()
-        .modelContainer(for: [NewsModel.self, UserModel.self, ConfigModel.self])
+    
+    func getMessages() async {
+        let messageSchemas: [MessageSchema]
+        do {
+            messageSchemas = try await APIManager.shared.getData(from: "support/\(user!.id)")
+        }
+        catch {
+            alert = true
+            return
+        }
+        
+        do {
+            for message in messageSchemas {
+                let messageModel = MessageModel(
+                    id: message.id,
+                    message: message.response
+                )
+                modelContext.insert(messageModel)
+            }
+            try modelContext.save()
+        }
+        catch {
+            alert = true
+            return
+        }
+    }
 }

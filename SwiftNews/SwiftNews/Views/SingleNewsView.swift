@@ -1,18 +1,23 @@
 //
-// SwiftNews
+//  SingleNewsView.swift
+//  SwiftNews
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 
 struct SingleNewsView: View {
+    // Database related
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.presentationMode) var presentationMode
     @Bindable var news: NewsModel
     
-    @Environment(\.presentationMode) var presentationMode
-    
+    // News display related variables
     @State private var isTitleExpanded: Bool = false
     @State private var isContentExpanded: Bool = false
     
+    // View implementation
     var body: some View {
         ScrollView {
             Text("\(news.title)")
@@ -72,18 +77,14 @@ struct SingleNewsView: View {
         .frame(minHeight: 595, maxHeight: 595)
     }
     
-    func handleUnsave(news: NewsModel) -> Void {
-        news.saved.toggle()
+    func handleUnsave(news: NewsModel) {
+        modelContext.delete(news)
         presentationMode.wrappedValue.dismiss()
     }
     
-    func handleUrl(news: NewsModel) -> Void {
+    func handleUrl(news: NewsModel) {
         if UIApplication.shared.canOpenURL(URL(string: news.url)!) {
             UIApplication.shared.open(URL(string: news.url)!, options: [:], completionHandler: nil)
         }
     }
 }
-
-//#Preview {
-//    SingleNewsView(news: <#NewsModel#>)
-//}
