@@ -40,7 +40,7 @@ def read_newsfeed(data: schemas.Newsfeed, db) -> List[schemas.News]:
     return news
 
 
-def send_sharednews(data: schemas.SharedNews, db) -> None:
+def send_sharednews(data: schemas.SharedNews, db) -> str:
     link = utilities.random_string(64)
     while db.query(models.SharedNews).filter(models.SharedNews.link == link).first() is not None:
         link = utilities.random_string(64)
@@ -56,7 +56,7 @@ def send_sharednews(data: schemas.SharedNews, db) -> None:
         content=data.content
     ))
 
-    return "/".join([config.BASE_URL, "api/sharednews", data.user, link])
+    return f"swiftnews://{data.user}/{link}"
 
 
 def make_qrcode(data: schemas.QRCodeSchema, db) -> str:

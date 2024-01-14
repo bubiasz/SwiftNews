@@ -19,7 +19,7 @@ for language, location in config.SUPPORTED_LANGUAGES:
             db.add(models.News(
                 category=article.category,
                 language=article.language,
-                location=article.location,
+                region=article.location,
                 url=article.url,
                 date=article.date,
                 title=article.title,
