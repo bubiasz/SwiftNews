@@ -1,10 +1,10 @@
 //
+//  SwiftNewsApp.swift
 //  SwiftNews
 //
 
 import SwiftData
 import SwiftUI
-
 
 @main
 struct SwiftNewsApp: App {
@@ -12,6 +12,6 @@ struct SwiftNewsApp: App {
         WindowGroup {
             SplashView()
         }
-        .modelContainer(for: [ConfigModel.self, UserModel.self, NewsModel.self])
+        .modelContainer(for: [ConfigModel.self, UserModel.self, NewsModel.self, MessageModel.self])
     }
 }
