@@ -1,9 +1,10 @@
 //
+//  NewsModel.swift
 //  SwiftNews
 //
 
+import Foundation
 import SwiftData
-
 
 @Model
 class NewsModel {

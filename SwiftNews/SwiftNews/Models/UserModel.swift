@@ -1,18 +1,19 @@
 //
+//  UserModel.swift
 //  SwiftNews
 //
 
+import Foundation
 import SwiftData
-
 
 @Model
 class UserModel {
     var id: String
     var time: Int
     var location: String
-    var categories: [String: Int]?
+    var categories: [String: Int]
     
-    init(id: String, time: Int = 10, location: String = "US", categories: [String: Int]? = nil) {
+    init(id: String, time: Int, location: String, categories: [String: Int]) {
         self.id = id
         self.time = time
         self.location = location
