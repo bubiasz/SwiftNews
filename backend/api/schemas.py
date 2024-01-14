@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -8,8 +9,7 @@ class Newsfeed(BaseModel):
     # User data fields
     user: str
     time: int
-    region: str
-    language: str
+    location: str
     categories: dict[str, int]
 
 
@@ -20,20 +20,20 @@ class News(BaseModel):
 
     # News data fields
     url: str
-    date: str
+    date: datetime.date
     title: str
     content: str
 
 
 # Used in sharednews [post]
-class SharedNews(News):
+class SharedNews(BaseModel):
     # Shared news metadata fields
     user: str
     category: str
 
     # Shared news data fields
     url: str
-    date: str
+    date: datetime.date
     title: str
     content: str
 
@@ -45,14 +45,14 @@ class QRCodeSchema(BaseModel):
 
     # QR code data fields
     time: int
-    region: str
-    language: str
+    location: str
     categories: dict[str, int]
 
 
 # Used in support [get]
 class SupportResponse(BaseModel):
     # Support message data fields
+    id: Optional[int]
     response: Optional[str]
 
 
@@ -69,3 +69,8 @@ class ConfigItem(BaseModel):
     language: str
     region: str
     categories: list[str]
+
+
+class Config(BaseModel):
+    times: list[int]
+    locations: list[ConfigItem]
