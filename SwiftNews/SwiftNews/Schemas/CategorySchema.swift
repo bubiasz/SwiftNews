@@ -1,12 +1,11 @@
 //
+//  CategorySchema.swift
 //  SwiftNews
 //
 
 import Foundation
 
-
 struct CategorySchema: Identifiable {
-    let id = UUID()
-    let name: String
+    let id: String
     let value: Int
 }

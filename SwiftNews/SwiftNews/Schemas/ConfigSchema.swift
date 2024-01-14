@@ -1,17 +1,17 @@
 //
+//  ConfigSchema.swift
 //  SwiftNews
 //
 
 import Foundation
 
-
-struct ConfigItem: Codable {
-    let language: String
+struct Location: Codable {
     let region: String
+    let language: String
     let categories: [String]
 }
 
 struct ConfigSchema: Codable {
     let times: [Int]
-    let locations: [ConfigItem]
+    let locations: [Location]
 }

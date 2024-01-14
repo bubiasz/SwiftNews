@@ -1,11 +1,11 @@
 //
+//  NewsPostSchema.swift
 //  SwiftNews
 //
 
 import Foundation
 
-
-struct NewsfeedSchema: Codable{
+struct NewsPostSchema: Codable{
     let user: String
     let time: Int
     let location: String

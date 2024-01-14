@@ -1,10 +1,10 @@
 //
+//  UserSchema.swift
 //  SwiftNews
 //
 
 import Foundation
 
-
 struct UserSchema: Codable {
-    let uniqueId: String
+    let id: String
 }

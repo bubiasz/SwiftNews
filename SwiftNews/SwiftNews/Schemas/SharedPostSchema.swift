@@ -1,11 +1,12 @@
 //
-//  NewsSchema.swift
+//  SharedSchema.swift
 //  SwiftNews
 //
 
 import Foundation
 
-struct NewsSchema: Codable {
+struct SharedPostSchema: Codable {
+    let user: String
     let url: String
     let date: String
     let title: String
