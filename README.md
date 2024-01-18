@@ -21,3 +21,34 @@ The `APIManager` class in `SwiftNews` serves as a Singleton to centralize and ma
 
 ### [Observer](SwiftNews/SwiftNews/Views/ScannerView.swift)
 The `QRScannerDelegate` class in `SwiftNews` serves as an observable delegate, implementing the Observer Pattern to handle QR code scanning within the iOS application. This design pattern allows multiple components to react to changes in the scanning process by subscribing to updates from the `QRScannerDelegate`. The ObservableObject protocol and the `@Published` property wrapper facilitate seamless communication between the `QRScannerDelegate` and observing components.
+
+### [Strategy pattern](backend/cron/scrapers/strategy_scraper.py)
+The `ParserStrategy` and `ScraperStrategy` interfaces work as the Strategy interfaces, being blueprints for specific implementations such as NewspaperParser, GoogleNewsScraper classes. They are providing concrete application that adhere to the defined strategies. This separation in code helps us improve code maintainability and allow us to create different approaches to scraping the data and parsing it in the fututre. Open for extension but closed for modification.
+
+### [Abstract Factory](backend/cron/scraper.py)
+The `ScraperFactory` and `ParserFactory` serve as an Abstract Factory to enable managing families of related classes. The abstraction provided by those classes allow us to create instances of related classes without specifying their concrete implementations inside the code. `ParserFactory` and `ScraperFactory` encapsulate the logic necessary to instantiate different versions of scrapers and parsers based on specific requirements and it enables us to change them easily without need to change anything in the code in the `config` file.
+
+## Screen functionalities
+### [SplashView.swift](SwiftNews/SwiftNews/Views/SplashView.swift)
+SplashView is the initial screen that sets the tone for the app experience. Its primary functionality lies in seamlessly downloading essential data from the API, ensuring a smooth transition into the main application. This screen acts as a visual introduction, offering users a brief glimpse into the app's purpose and features. Through a captivating visual presentation, it sets the stage for a user-friendly journey by establishing a connection with the necessary data sources.
+
+### [NewsView.swift](SwiftNews/SwiftNews/Views/NewsView.swift)
+NewsView is the heart of the application, providing users with a comprehensive platform to engage with news content. Users can read, like, dislike, save, and share news articles. The inclusion of URLs to the news sources facilitates easy access to additional information. A strategically placed button invites users to transition seamlessly to the user zone, unlocking personalized features and enhancing the overall user experience.
+
+### [ProfileView.swift](SwiftNews/SwiftNews/Views/ProfileView.swift)
+ProfileView serves as the central hub for user customization. Users can fine-tune their news experience by adjusting preferences such as time settings and location. The screen further branches into multiple functionalities, offering buttons that lead to PreferencesView, SavedView, CodeView, and MessageView. This comprehensive user center ensures a tailored experience while providing easy access to various features and settings.
+
+### [SavedView.swift](SwiftNews/SwiftNews/Views/SavedView.swift)
+SavedView acts as a repository for previously saved news articles. Users can revisit and manage their collection of saved content, fostering a sense of organization and personalization. This screen enhances user convenience by offering a consolidated view of content that resonated with them, creating a seamless browsing experience.
+
+### [PreferencesView.swift](SwiftNews/SwiftNews/Views/PreferencesView.swift)
+PreferencesView is a dynamic screen that allows users to visualize and interact with their preferences. Through an interactive graph, users can gain insights into their preferred settings, providing a unique and engaging experience. The inclusion of a reset option ensures flexibility, allowing users to refine their preferences over time and adapt to evolving needs.
+
+### [CodeView.swift](SwiftNews/SwiftNews/Views/CodeView.swift)
+CodeView serves a dual purpose, displaying a QR code that facilitates data migration between devices and offering a quick transition into the scanner view. The QR code simplifies the process of importing data to a new device, streamlining user interactions and ensuring a hassle-free transition. The inclusion of a button to switch to the scanner view enhances the overall functionality and versatility of this screen.
+
+### [ScannerView.swift](SwiftNews/SwiftNews/Views/ScannerView.swift)
+ScannerView complements CodeView by providing users with a dedicated space to scan previously generated QR codes. This functionality enables users to effortlessly import data to a new device, ensuring a seamless continuation of their personalized experience. The integration of a scanning feature adds a layer of convenience, emphasizing the app's commitment to user-friendly interactions.
+
+### [MessageView.swift](SwiftNews/SwiftNews/Views/MessageView.swift)
+MessageView serves as a direct channel for users to connect with the developers. By offering a straightforward messaging interface, users can effortlessly send messages, providing valuable feedback or seeking assistance. This feature enhances the app's user support, fostering a collaborative environment and reinforcing the developers' commitment to user satisfaction.
