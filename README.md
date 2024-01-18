@@ -13,3 +13,11 @@ The project was a collaborative effort between two developers, both focusing on 
 
 ## The idea behind the app
 We created this application because there was no similar one on the market. It weighs only 11MB yet encompasses all essential features. The app allows for personalized news delivery while prioritizing user privacy, as all user data remains stored on their device. Our motivation stemmed from the absence of such an app and our own need for it. This drove us to develop the application in the best way possible with a focus on efficiency and user privacy. We are also open to any suggestions from users and invite them to reach out to us for feedback and ideas. Additionally, we believe in empowering users by providing the option to host their own backend server at home for complete privacy. Soon, a Dockerfile will be added to the project to facilitate this process. Your active participation is key to shaping the app's future. Thank you for your support!
+
+## Used design patterns
+
+### [Singleton](SwiftNews/SwiftNews/APIManager.swift)
+The `APIManager` class in `SwiftNews` serves as a Singleton to centralize and manage all API connections within the frontend of the iOS application. This design pattern ensures a single instance of the `APIManager` is created and shared across the application, providing a unified point of access to handle API interactions.
+
+### [Observer](SwiftNews/SwiftNews/Views/ScannerView.swift)
+The `QRScannerDelegate` class in `SwiftNews` serves as an observable delegate, implementing the Observer Pattern to handle QR code scanning within the iOS application. This design pattern allows multiple components to react to changes in the scanning process by subscribing to updates from the `QRScannerDelegate`. The ObservableObject protocol and the `@Published` property wrapper facilitate seamless communication between the `QRScannerDelegate` and observing components.
