@@ -46,4 +46,7 @@ class Parser(strategy_parser.ParserStrategy):
         if not article.text:
             raise ValueError("Empty article")
 
+        if len(article.text) < 1500:
+            return article.title, article.text
+
         return article.title, article.summary
